@@ -18,7 +18,8 @@
                 android:layout_height="50dp"
                 android:textColor="#ffffff"
                 android:background="@drawable/btn_rounded"
-                android:text="Front 9"/>
+                android:text="Front 9"
+                android:onClick="toHolesActivity"/>
         </TableRow>
         <TableRow android:gravity="center">
             <Button
