@@ -10,8 +10,16 @@
         android:id="@+id/coordinates"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Hello World"
+        android:text="No GPS Found"
         android:gravity="center"
         android:textSize="20dp" />
+    <TextView
+        android:id="@+id/nfcTag"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="NFC Tag"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="80dp"
+        android:textSize="20dp"/>
 
 </android.support.constraint.ConstraintLayout>

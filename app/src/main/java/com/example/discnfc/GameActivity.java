@@ -1,20 +1,34 @@
 package com.example.discnfc;
 
+import android.annotation.TargetApi;
 import android.Manifest;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.os.Build;
+import android.os.Parcelable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import java.io.UnsupportedEncodingException;
+
+import static android.nfc.NdefRecord.createTextRecord;
 
 public class GameActivity extends AppCompatActivity {
+
+    NfcAdapter nfcAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +36,22 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         final TextView coordinates = findViewById(R.id.coordinates);
+        initiateGPSRequests(coordinates);
 
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        initiateNFC(nfcAdapter);
+    }
+
+    protected void initiateNFC(NfcAdapter nfcAdapter){
+        //Toast NFC availability to user
+        if(nfcAdapter!=null && nfcAdapter.isEnabled()){
+            Toast.makeText(this, "NFC available!", Toast.LENGTH_SHORT).show();
+        } else{
+            Toast.makeText(this, "NFC not available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected void initiateGPSRequests(final TextView coordinates){
         //Create location manager
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -71,11 +100,88 @@ public class GameActivity extends AppCompatActivity {
             case 1:{
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     Toast.makeText(GameActivity.this, "GPS Enabled", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(GameActivity.this, "GPS Disabled", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent (Intent intent){
+        super.onNewIntent(intent);
+
+        if(intent.hasExtra(NfcAdapter.EXTRA_TAG)){
+            Toast.makeText(this, "Scanned", Toast.LENGTH_SHORT).show();
+            Parcelable[] parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+            if(parcelables != null && parcelables.length > 0){
+                readTextFromMessage((NdefMessage) parcelables[0]);
+            }
+            else{
+                Toast.makeText(this, "No NDEF Messages Found!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void readTextFromMessage(NdefMessage ndefMessage){
+        NdefRecord[] ndefRecords = ndefMessage.getRecords();
+
+        if(ndefRecords != null && ndefRecords.length>0){
+            NdefRecord ndefRecord = ndefRecords[0];
+
+            String tagContent = getTextFromNdefRecord(ndefRecord);
+        }
+        else{
+            Toast.makeText(this, "No NDEF Records Found!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private NdefMessage createNdefMessage(String content){
+        NdefRecord ndefRecord = createTextRecord("en", content);
+
+        NdefMessage ndefMessage = new NdefMessage(new NdefRecord[] {ndefRecord});
+
+        return ndefMessage;
+    }
+
+    public String getTextFromNdefRecord(NdefRecord ndefRecord)
+    {
+        String tagContent = null;
+        try{
+            byte[] payload = ndefRecord.getPayload();
+            String textEncoding = ((payload[0] & 128) == 0) ? "UTF-8" : "UTF-16";
+            int languageSize = payload[0] & 0063;
+            tagContent = new String(payload, languageSize + 1, payload.length - languageSize -1, textEncoding);
+
+        }catch(UnsupportedEncodingException e){
+            Log.e("getTextFromNdefRecord", e.getMessage(), e);
+        }
+        return tagContent;
+    }
+
+    private void enableForegroundDispatchSystem(){
+
+        Intent intent = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        IntentFilter[] intentFilters = new IntentFilter[] {};
+
+        nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        disableForegroundDispatchSystem();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        enableForegroundDispatchSystem();
+    }
+
+    private void disableForegroundDispatchSystem(){
+        nfcAdapter.disableForegroundDispatch(this);
     }
 }
