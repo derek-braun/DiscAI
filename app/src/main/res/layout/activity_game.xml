@@ -4,22 +4,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".GameActivity">
+    tools:context=".GameActivity"
+    android:background="#ff8d58">
 
     <TextView
-        android:id="@+id/coordinates"
+        android:id="@+id/holeText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="No GPS Found"
-        android:gravity="center"
-        android:textSize="20dp" />
+        android:text="Hole 1"
+        android:textColor="#ffffff"
+        android:textSize="50dp"
+        android:textStyle="bold"
+        android:layout_margin="40dp"/>
     <TextView
-        android:id="@+id/nfcTag"
+        android:id="@+id/scoreText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="NFC Tag"
-        android:gravity="center_horizontal"
-        android:layout_marginTop="80dp"
-        android:textSize="20dp"/>
+        android:gravity="center"
+        android:text="0"
+        android:textColor="#ffffff"
+        android:textSize="220dp"
+        android:textStyle="bold"/>
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom">
+        <TableRow android:gravity="center">
+            <TextView
+                android:id="@+id/coordinates"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="No GPS Found"
+                android:textColor="#ffffff"
+                android:textSize="20dp" />
+        </TableRow>
+        <TableRow android:gravity="center" android:layout_marginBottom="40dp">
+            <TextView
+                android:id="@+id/nfcTag"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="NFC Tag"
+                android:textColor="#ffffff"
+                android:textSize="20dp"/>
+        </TableRow>
+    </TableLayout>
 
 </android.support.constraint.ConstraintLayout>

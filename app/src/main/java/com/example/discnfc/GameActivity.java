@@ -15,10 +15,12 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.Build;
 import android.os.Parcelable;
+import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,11 @@ import static android.nfc.NdefRecord.createTextRecord;
 public class GameActivity extends AppCompatActivity {
 
     NfcAdapter nfcAdapter;
+    LocationManager locationManager;
+    LocationListener locationListener;
+    TextView txtTagContent;
+    TextView scoreDisplay;
+    int holeScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +45,19 @@ public class GameActivity extends AppCompatActivity {
         final TextView coordinates = findViewById(R.id.coordinates);
         initiateGPSRequests(coordinates);
 
+        txtTagContent = findViewById(R.id.nfcTag);
+
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         initiateNFC(nfcAdapter);
+
+        holeScore = 0;
+        scoreDisplay = findViewById(R.id.scoreText);
     }
 
     protected void initiateNFC(NfcAdapter nfcAdapter){
         //Toast NFC availability to user
         if(nfcAdapter!=null && nfcAdapter.isEnabled()){
-            Toast.makeText(this, "NFC available!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "NFC available", Toast.LENGTH_SHORT).show();
         } else{
             Toast.makeText(this, "NFC not available", Toast.LENGTH_SHORT).show();
         }
@@ -53,12 +65,12 @@ public class GameActivity extends AppCompatActivity {
 
     protected void initiateGPSRequests(final TextView coordinates){
         //Create location manager
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         System.out.println("Connecting Location Manager to Location Listener");
 
         //Location listener responds to location updates
-        LocationListener locationListener = new LocationListener() {
+        locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 coordinates.setText(location.getLongitude() + " " + location.getLatitude());
@@ -83,14 +95,6 @@ public class GameActivity extends AppCompatActivity {
         //Request GPS permission for app from user
         ActivityCompat.requestPermissions(GameActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         ActivityCompat.requestPermissions(GameActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-
-        //If GPS permission is not enabled, exit
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            System.out.println("Failed to get gps permission");
-            return;
-        }
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
     }
 
     //Toast user gps status
@@ -99,7 +103,7 @@ public class GameActivity extends AppCompatActivity {
         switch(requestCode){
             case 1:{
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(GameActivity.this, "GPS Enabled", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GameActivity.this, "GPS Available", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
@@ -129,6 +133,22 @@ public class GameActivity extends AppCompatActivity {
             NdefRecord ndefRecord = ndefRecords[0];
 
             String tagContent = getTextFromNdefRecord(ndefRecord);
+            txtTagContent.setText(tagContent);
+
+            holeScore++;
+            scoreDisplay.setText(Integer.toString(holeScore));
+
+            // Get instance of Vibrator from current Context
+            Vibrator nfcVibrate = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            nfcVibrate.vibrate(3000);
+
+            //If GPS permission is not enabled, exit
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                System.out.println("Failed to get gps permission");
+                return;
+            }
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, locationListener, null);
+
         }
         else{
             Toast.makeText(this, "No NDEF Records Found!", Toast.LENGTH_SHORT).show();
@@ -161,8 +181,10 @@ public class GameActivity extends AppCompatActivity {
 
     private void enableForegroundDispatchSystem(){
 
-        Intent intent = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+        Intent intent = new Intent(this, GameActivity.class).addFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
         IntentFilter[] intentFilters = new IntentFilter[] {};
 
         nfcAdapter.enableForegroundDispatch(this, pendingIntent, intentFilters, null);
@@ -178,6 +200,7 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
         enableForegroundDispatchSystem();
     }
 
