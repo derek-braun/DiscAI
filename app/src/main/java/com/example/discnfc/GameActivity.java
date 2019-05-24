@@ -22,11 +22,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 import static android.nfc.NdefRecord.createTextRecord;
@@ -39,6 +39,7 @@ public class GameActivity extends AppCompatActivity {
     TextView txtTagContent;
     TextView scoreDisplay;
     TextView holeDisplay;
+    Button nextHoleButton;
     int holeNumber;
     int holeScore;
     String currentDisc;
@@ -62,24 +63,38 @@ public class GameActivity extends AppCompatActivity {
         holeScore = 0;
         Bundle extras = getIntent().getExtras();
         holeNumber = extras.getInt("holeValue");
-        holeDisplay.setText(Integer.toString(holeNumber));
+        holeDisplay.setText("Hole " + Integer.toString(holeNumber));
 
         scoreDisplay = findViewById(R.id.scoreText);
+        nextHoleButton = findViewById(R.id.nextHoleButton);
 
         holeData = new HoleData[18];
         throwDataList = new LinkedList<>();
     }
 
+    protected void toResultsActivity(){
+        Intent myIntent = new Intent(getBaseContext(), ResultsActivity.class);
+        startActivity(myIntent);
+    }
+
     protected void startNextHole(View view){
-        holeData[holeNumber-1] = new HoleData(throwDataList);
-        throwDataList = new LinkedList<>();
-        holeNumber++;
-        if(holeNumber == 19){
-            //Go to end activity
+        if(holeNumber == 17){
+            nextHoleButton.setText("View Results");
         }
-        holeDisplay.setText("Hole " + Integer.toString(holeNumber));
-        holeScore = 0;
-        scoreDisplay.setText(Integer.toString(holeScore));
+
+        if(holeNumber < 19){
+            holeData[holeNumber-1] = new HoleData(throwDataList);
+            throwDataList = new LinkedList<>();
+            if(holeNumber == 18){
+                toResultsActivity();
+            }
+            else{
+                holeNumber++;
+                holeDisplay.setText("Hole " + Integer.toString(holeNumber));
+                holeScore = 0;
+                scoreDisplay.setText(Integer.toString(holeScore));
+            }
+        }
     }
 
     protected void initiateNFC(NfcAdapter nfcAdapter){
