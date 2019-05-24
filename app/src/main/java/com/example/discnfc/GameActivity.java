@@ -74,6 +74,10 @@ public class GameActivity extends AppCompatActivity {
 
     protected void toResultsActivity(){
         Intent myIntent = new Intent(getBaseContext(), ResultsActivity.class);
+        int resultDataToPass[] = new int[18];
+        for(int i = 0; i < 18; i++)
+            resultDataToPass[i] = holeData[i].getScore();
+        myIntent.putExtra("roundData", resultDataToPass);
         startActivity(myIntent);
     }
 
@@ -83,7 +87,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         if(holeNumber < 19){
-            holeData[holeNumber-1] = new HoleData(throwDataList);
+            holeData[holeNumber-1] = new HoleData(throwDataList, holeScore);
             throwDataList = new LinkedList<>();
             if(holeNumber == 18){
                 toResultsActivity();
