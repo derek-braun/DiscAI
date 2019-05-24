@@ -60,16 +60,21 @@ public class GameActivity extends AppCompatActivity {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         initiateNFC(nfcAdapter);
 
+        holeData = new HoleData[18];
+        throwDataList = new LinkedList<>();
+
         holeScore = 0;
         Bundle extras = getIntent().getExtras();
         holeNumber = extras.getInt("holeValue");
+        if(holeNumber == 10){
+            for(int i = 0; i < 9; i++){
+                holeData[i] = new HoleData(null, 0);
+            }
+        }
         holeDisplay.setText("Hole " + Integer.toString(holeNumber));
 
         scoreDisplay = findViewById(R.id.scoreText);
         nextHoleButton = findViewById(R.id.nextHoleButton);
-
-        holeData = new HoleData[18];
-        throwDataList = new LinkedList<>();
     }
 
     protected void toResultsActivity(){
