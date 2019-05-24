@@ -29,24 +29,33 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="bottom">
-        <TableRow android:gravity="center">
-            <TextView
-                android:id="@+id/coordinates"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="No GPS Found"
-                android:textColor="#ffffff"
-                android:textSize="20dp" />
+        <TableRow android:gravity="center" android:layout_marginBottom="120dp">
+            <Button
+                android:id="@+id/nextHoleButton"
+                android:onClick="startNextHole"
+                android:background="@drawable/btn_rounded_white"
+                android:layout_width="170dp"
+                android:text="Next Hole"
+                android:textColor="#ff8d58"/>
         </TableRow>
-        <TableRow android:gravity="center" android:layout_marginBottom="40dp">
-            <TextView
-                android:id="@+id/nfcTag"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="NFC Tag"
-                android:textColor="#ffffff"
-                android:textSize="20dp"/>
-        </TableRow>
+        <!--<TableRow android:gravity="center">-->
+            <!--<TextView-->
+                <!--android:id="@+id/coordinates"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:text="No GPS Found"-->
+                <!--android:textColor="#ffffff"-->
+                <!--android:textSize="20dp" />-->
+        <!--</TableRow>-->
+        <!--<TableRow android:gravity="center" android:layout_marginBottom="40dp">-->
+            <!--<TextView-->
+                <!--android:id="@+id/nfcTag"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:text="NFC Tag"-->
+                <!--android:textColor="#ffffff"-->
+                <!--android:textSize="20dp"/>-->
+        <!--</TableRow>-->
     </TableLayout>
 
 </android.support.constraint.ConstraintLayout>

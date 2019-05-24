@@ -2,6 +2,7 @@ package com.example.discnfc;
 
 import android.annotation.TargetApi;
 import android.Manifest;
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +21,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 import static android.nfc.NdefRecord.createTextRecord;
 
@@ -35,23 +38,42 @@ public class GameActivity extends AppCompatActivity {
     LocationListener locationListener;
     TextView txtTagContent;
     TextView scoreDisplay;
+    TextView holeDisplay;
+    int holeNumber;
     int holeScore;
+    String currentDisc;
+    LinkedList<ThrowData> throwDataList;
+    HoleData[] holeData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        final TextView coordinates = findViewById(R.id.coordinates);
-        initiateGPSRequests(coordinates);
+        //final TextView coordinates = findViewById(R.id.coordinates);
+        initiateGPSRequests();
 
-        txtTagContent = findViewById(R.id.nfcTag);
+        //txtTagContent = findViewById(R.id.nfcTag);
+        holeDisplay = findViewById(R.id.holeText);
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         initiateNFC(nfcAdapter);
 
         holeScore = 0;
+        holeNumber = 1;
         scoreDisplay = findViewById(R.id.scoreText);
+
+        holeData = new HoleData[18];
+        throwDataList = new LinkedList<>();
+    }
+
+    protected void startNextHole(View view){
+        holeData[holeNumber-1] = new HoleData(throwDataList);
+        throwDataList = new LinkedList<>();
+        holeNumber++;
+        holeDisplay.setText("Hole " + Integer.toString(holeNumber));
+        holeScore = 0;
+        scoreDisplay.setText(Integer.toString(holeScore));
     }
 
     protected void initiateNFC(NfcAdapter nfcAdapter){
@@ -63,7 +85,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
-    protected void initiateGPSRequests(final TextView coordinates){
+    protected void initiateGPSRequests(){
         //Create location manager
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
@@ -73,7 +95,8 @@ public class GameActivity extends AppCompatActivity {
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                coordinates.setText(location.getLongitude() + " " + location.getLatitude());
+                //coordinates.setText(location.getLongitude() + " " + location.getLatitude());
+                throwDataList.add(new ThrowData(holeNumber, holeScore, currentDisc, location));
             }
 
             @Override
@@ -133,9 +156,18 @@ public class GameActivity extends AppCompatActivity {
             NdefRecord ndefRecord = ndefRecords[0];
 
             String tagContent = getTextFromNdefRecord(ndefRecord);
-            txtTagContent.setText(tagContent);
+            //txtTagContent.setText(tagContent);
+            currentDisc = tagContent;
 
-            holeScore++;
+            if(tagContent.equals("end-hole")){
+                holeScore = 0;
+                holeNumber++;
+                holeDisplay.setText("Hole " + Integer.toString(holeNumber));
+            }
+            else{
+                holeScore++;
+            }
+
             scoreDisplay.setText(Integer.toString(holeScore));
 
             // Get instance of Vibrator from current Context
@@ -195,6 +227,11 @@ public class GameActivity extends AppCompatActivity {
         super.onPause();
 
         disableForegroundDispatchSystem();
+
+        ActivityManager activityManager = (ActivityManager) getApplicationContext()
+                .getSystemService(Context.ACTIVITY_SERVICE);
+
+        activityManager.moveTaskToFront(getTaskId(), 0);
     }
 
     @Override
@@ -206,5 +243,10 @@ public class GameActivity extends AppCompatActivity {
 
     private void disableForegroundDispatchSystem(){
         nfcAdapter.disableForegroundDispatch(this);
+    }
+
+    @Override
+    public void onBackPressed(){
+        //Do nothing
     }
 }
