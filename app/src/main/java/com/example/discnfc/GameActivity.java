@@ -60,7 +60,10 @@ public class GameActivity extends AppCompatActivity {
         initiateNFC(nfcAdapter);
 
         holeScore = 0;
-        holeNumber = 1;
+        Bundle extras = getIntent().getExtras();
+        holeNumber = extras.getInt("holeValue");
+        holeDisplay.setText(Integer.toString(holeNumber));
+
         scoreDisplay = findViewById(R.id.scoreText);
 
         holeData = new HoleData[18];
@@ -71,6 +74,9 @@ public class GameActivity extends AppCompatActivity {
         holeData[holeNumber-1] = new HoleData(throwDataList);
         throwDataList = new LinkedList<>();
         holeNumber++;
+        if(holeNumber == 19){
+            //Go to end activity
+        }
         holeDisplay.setText("Hole " + Integer.toString(holeNumber));
         holeScore = 0;
         scoreDisplay.setText(Integer.toString(holeScore));

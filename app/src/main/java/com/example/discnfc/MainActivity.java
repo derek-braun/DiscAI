@@ -15,9 +15,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Switch to game activity on button press
-    protected void toHolesActivity(View view){
+    protected void toFrontNineActivity(View view){
         Intent myIntent = new Intent(getBaseContext(), GameActivity.class);
         myIntent.putExtra("holeValue", 1);
+        startActivity(myIntent);
+    }
+
+    protected void toBackNineActivity(View view){
+        Intent myIntent = new Intent(getBaseContext(), GameActivity.class);
+        myIntent.putExtra("holeValue", 10);
         startActivity(myIntent);
     }
 }
