@@ -5,6 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 public class ResultsActivity extends AppCompatActivity {
 
     TextView hole1, hole2, hole3, hole4, hole5, hole6, hole7, hole8, hole9;
@@ -18,6 +22,16 @@ public class ResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results);
+
+        Date c = Calendar.getInstance().getTime();
+        System.out.println("Current time => " + c);
+
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
+        String formattedDate = df.format(c);
+
+        TextView dateText = findViewById(R.id.dateText);
+        dateText.setText(formattedDate);
+
 
         hole1 = findViewById(R.id.hole1);
         hole2 = findViewById(R.id.hole2);
@@ -42,7 +56,7 @@ public class ResultsActivity extends AppCompatActivity {
         total = findViewById(R.id.total);
 
         Bundle extras = getIntent().getExtras();
-        int[] values = (int[]) extras.get("roundData");
+        int[] values = extras.getIntArray("roundData");
 
         if(values[0] != 0)
             hole1.setText("Hole 1: " + values[0]);
@@ -126,9 +140,9 @@ public class ResultsActivity extends AppCompatActivity {
         }
 
         if(completedFront9)
-            front9.setText("Front 9: " + Integer.toString(front9Value - 28));
+            front9.setText("Front 9:        " + Integer.toString(front9Value - 28));
         else
-            front9.setText("Front 9: N/A");
+            front9.setText("Front 9:        N/A");
 
         boolean completedBack9 = true;
         for(int i = 9; i < 18; i++){
@@ -139,13 +153,19 @@ public class ResultsActivity extends AppCompatActivity {
         }
 
         if(completedBack9)
-            back9.setText("Front 9: " + Integer.toString(back9Value - 28));
+            back9.setText("Back 9:         " + Integer.toString(back9Value - 28));
         else
-            back9.setText("Back 9: N/A");
+            back9.setText("Back 9:         N/A");
 
         if(completedBack9 && completedFront9)
-            total.setText("Total: " + Integer.toString(front9Value + back9Value - 56));
+            total.setText("Total:            " + Integer.toString(front9Value + back9Value - 56));
         else
-            total.setText("Total: N/A");
+            total.setText("Total:            N/A");
+    }
+
+    @Override
+    public void onBackPressed(){
+        Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
+        startActivity(myIntent);
     }
 }
